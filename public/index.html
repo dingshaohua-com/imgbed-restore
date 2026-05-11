@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R2 -> D1 同步工具</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #edf2f7;
+        --surface: #ffffff;
+        --surface-soft: #f7fafc;
+        --border: #d9e2ec;
+        --border-strong: #b8c5d6;
+        --text: #142033;
+        --muted: #64748b;
+        --accent: #2563eb;
+        --accent-strong: #1d4ed8;
+        --success: #15803d;
+        --warning: #b45309;
+        --danger: #b91c1c;
+        --shadow: 0 18px 50px #0f172a14;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      [x-cloak] {
+        display: none !important;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 28px;
+        background:
+          linear-gradient(180deg, #f8fafc 0, var(--bg) 330px),
+          var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .wrap {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+      }
+
+      .hero {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(30px, 5vw, 48px);
+        line-height: 1.05;
+      }
+
+      .tip {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      code {
+        padding: 2px 6px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--accent-strong);
+        font-size: 0.92em;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 18px;
+        align-items: start;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+      }
+
+      .section {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-soft);
+      }
+
+      button.section-head {
+        width: 100%;
+        border: 0;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+      }
+
+      .section-head-main {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .index {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 7px;
+        background: #dbeafe;
+        color: var(--accent-strong);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .section-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: right;
+      }
+
+      .toggle {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: #ffffff;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .section-body {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+      }
+
+      .field-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .field-grid.compact {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field span {
+        color: #26344d;
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      input {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fbfdff;
+        color: var(--text);
+        outline: none;
+        transition:
+          border-color 160ms ease,
+          box-shadow 160ms ease,
+          background 160ms ease;
+      }
+
+      input:focus {
+        border-color: var(--accent);
+        background: #ffffff;
+        box-shadow: 0 0 0 4px #2563eb1c;
+      }
+
+      input::placeholder {
+        color: #94a3b8;
+      }
+
+      .checks {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .check {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        min-height: 64px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+      }
+
+      .check input {
+        width: 18px;
+        height: 18px;
+        min-height: 0;
+        margin-top: 2px;
+        padding: 0;
+        accent-color: var(--accent);
+      }
+
+      .check strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+      }
+
+      .check small {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .actions {
+        position: sticky;
+        bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 0 2px;
+        background: linear-gradient(180deg, transparent, var(--bg) 38%);
+      }
+
+      .btn {
+        min-height: 42px;
+        padding: 10px 16px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-strong);
+      }
+
+      .btn-secondary {
+        border-color: var(--border-strong);
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      .btn-danger {
+        border-color: #fecaca;
+        background: #fff7f7;
+        color: var(--danger);
+      }
+
+      .btn[disabled] {
+        cursor: not-allowed;
+        opacity: 0.62;
+      }
+
+      .side {
+        position: sticky;
+        top: 18px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel-head h2 {
+        font-size: 15px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .status.running {
+        background: #dbeafe;
+        color: var(--accent-strong);
+      }
+
+      .status.success {
+        background: #dcfce7;
+        color: var(--success);
+      }
+
+      .status.error {
+        background: #fee2e2;
+        color: var(--danger);
+      }
+
+      .summary {
+        display: grid;
+        gap: 10px;
+        padding: 14px 16px;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .summary-row strong {
+        overflow: hidden;
+        max-width: 170px;
+        color: var(--text);
+        font-weight: 750;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      pre {
+        min-height: 260px;
+        max-height: 58vh;
+        margin: 0;
+        padding: 14px 16px;
+        overflow: auto;
+        border-radius: 0 0 8px 8px;
+        background: #0f172a;
+        color: #dbeafe;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 940px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .side {
+          position: static;
+        }
+      }
+
+      @media (max-width: 680px) {
+        body {
+          padding: 18px;
+        }
+
+        .section-head,
+        .panel-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .section-note {
+          text-align: left;
+        }
+
+        .field-grid,
+        .field-grid.compact,
+        .checks {
+          grid-template-columns: 1fr;
+        }
+
+        .actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body x-data="syncTool()" x-cloak>
+    <main class="wrap">
+      <header class="hero">
+        <h1>R2 -> D1 同步</h1>
+        <p class="tip">填写参数后提交，将调用 <code>POST /sync/r2-d1</code> 执行同步。</p>
+      </header>
+
+      <div class="shell">
+        <form @submit.prevent="submit">
+          <section class="section">
+            <div class="section-head">
+              <div class="section-title">
+                <span class="index">01</span>
+                <h2>目标服务</h2>
+              </div>
+              <p class="section-note">图片服务地址与接口鉴权</p>
+            </div>
+            <div class="section-body">
+              <div class="field-grid">
+                <label class="field">
+                  <span>baseUrl</span>
+                  <input x-model.trim="payload.baseUrl" placeholder="https://img.example.com" required />
+                </label>
+                <label class="field">
+                  <span>apiToken</span>
+                  <input x-model.trim="payload.apiToken" type="password" placeholder="imgbed_xxx" required />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="section-title">
+                <span class="index">02</span>
+                <h2>R2 存储</h2>
+              </div>
+              <p class="section-note">源 Bucket 连接参数</p>
+            </div>
+            <div class="section-body">
+              <div class="field-grid">
+                <label class="field">
+                  <span>r2Endpoint</span>
+                  <input x-model.trim="payload.r2Endpoint" placeholder="https://xxx.r2.cloudflarestorage.com" required />
+                </label>
+                <label class="field">
+                  <span>r2Bucket</span>
+                  <input x-model.trim="payload.r2Bucket" placeholder="one" required />
+                </label>
+                <label class="field">
+                  <span>r2AccessKeyId</span>
+                  <input x-model.trim="payload.r2AccessKeyId" required />
+                </label>
+                <label class="field">
+                  <span>r2SecretAccessKey</span>
+                  <input x-model.trim="payload.r2SecretAccessKey" type="password" required />
+                </label>
+                <label class="field">
+                  <span>region</span>
+                  <input x-model.trim="payload.region" required />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <button class="section-head" type="button" @click="expanded.scope = !expanded.scope">
+              <span class="section-head-main">
+                <span class="section-title">
+                  <span class="index">03</span>
+                  <h2>同步范围（默认即可）</h2>
+                </span>
+                <span class="toggle" x-text="expanded.scope ? '↑' : '↓'"></span>
+              </span>
+              <span class="section-note">目标渠道与对象前缀</span>
+            </button>
+            <div class="section-body" x-show="expanded.scope">
+              <div class="field-grid">
+                <label class="field">
+                  <span>channelName</span>
+                  <input x-model.trim="payload.channelName" required />
+                </label>
+                <label class="field">
+                  <span>prefix</span>
+                  <input x-model.trim="payload.prefix" placeholder="可留空，例如 images/" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <button class="section-head" type="button" @click="expanded.tuning = !expanded.tuning">
+              <span class="section-head-main">
+                <span class="section-title">
+                  <span class="index">04</span>
+                  <h2>性能与策略（默认即可）</h2>
+                </span>
+                <span class="toggle" x-text="expanded.tuning ? '↑' : '↓'"></span>
+              </span>
+              <span class="section-note">扫描分页、并发与写入行为</span>
+            </button>
+            <div class="section-body" x-show="expanded.tuning">
+              <div class="field-grid compact">
+                <label class="field">
+                  <span>pageSize</span>
+                  <input x-model.number="payload.pageSize" type="number" min="1" required />
+                </label>
+                <label class="field">
+                  <span>checkConcurrency</span>
+                  <input x-model.number="payload.checkConcurrency" type="number" min="1" required />
+                </label>
+                <label class="field">
+                  <span>restoreBatchSize</span>
+                  <input x-model.number="payload.restoreBatchSize" type="number" min="1" required />
+                </label>
+              </div>
+
+              <div class="checks">
+                <label class="check">
+                  <input x-model="payload.overwrite" type="checkbox" />
+                  <span>
+                    <strong>overwrite</strong>
+                    <small>已存在的文件也重新写入</small>
+                  </span>
+                </label>
+                <label class="check">
+                  <input x-model="payload.skipRebuild" type="checkbox" />
+                  <span>
+                    <strong>skipRebuild</strong>
+                    <small>同步后不触发索引重建</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button class="btn btn-danger" type="button" @click="clearSaved" :disabled="loading">清除本机保存</button>
+            <button class="btn btn-secondary" type="button" @click="clearOutput" :disabled="loading">清空结果</button>
+            <button class="btn btn-primary" type="submit" :disabled="loading">
+              <span x-text="loading ? '同步中...' : '开始同步'"></span>
+            </button>
+          </div>
+        </form>
+
+        <aside class="side">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>当前参数</h2>
+              <span class="status" :class="statusClass" x-text="statusText"></span>
+            </div>
+            <div class="summary">
+              <div class="summary-row"><span>Bucket</span><strong x-text="payload.r2Bucket || '-'"></strong></div>
+              <div class="summary-row"><span>Prefix</span><strong x-text="payload.prefix || '全部对象'"></strong></div>
+              <div class="summary-row"><span>Channel</span><strong x-text="payload.channelName || '-'"></strong></div>
+              <div class="summary-row"><span>Page Size</span><strong x-text="payload.pageSize"></strong></div>
+              <div class="summary-row"><span>Concurrency</span><strong x-text="payload.checkConcurrency"></strong></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>执行结果</h2>
+            </div>
+            <pre x-text="output"></pre>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const STORAGE_KEY = "r2-d1-sync-form";
+
+      function syncTool() {
+        return {
+          loading: false,
+          status: "idle",
+          output: "等待提交...",
+          expanded: {
+            scope: false,
+            tuning: false,
+          },
+          payload: {
+            baseUrl: "https://img.dingshaohua.com",
+            apiToken: "",
+            r2Endpoint: "",
+            r2AccessKeyId: "",
+            r2SecretAccessKey: "",
+            r2Bucket: "",
+            channelName: "default",
+            prefix: "",
+            region: "auto",
+            pageSize: 1000,
+            checkConcurrency: 20,
+            restoreBatchSize: 200,
+            overwrite: false,
+            skipRebuild: false,
+          },
+          init() {
+            const hasSaved = this.loadSaved();
+            if (!hasSaved) {
+              this.loadDefaults();
+            }
+            this.$watch("payload", () => this.save(), { deep: true });
+          },
+          get statusText() {
+            return {
+              idle: "待提交",
+              running: "执行中",
+              success: "已完成",
+              error: "失败",
+            }[this.status];
+          },
+          get statusClass() {
+            return {
+              running: this.status === "running",
+              success: this.status === "success",
+              error: this.status === "error",
+            };
+          },
+          buildPayload() {
+            return {
+              ...this.payload,
+              pageSize: Number(this.payload.pageSize || 1000),
+              checkConcurrency: Number(this.payload.checkConcurrency || 20),
+              restoreBatchSize: Number(this.payload.restoreBatchSize || 200),
+            };
+          },
+          loadSaved() {
+            try {
+              const saved = localStorage.getItem(STORAGE_KEY);
+              if (!saved) {
+                return false;
+              }
+              const data = JSON.parse(saved);
+              this.payload = {
+                ...this.payload,
+                ...data,
+              };
+              return true;
+            } catch {
+              localStorage.removeItem(STORAGE_KEY);
+              return false;
+            }
+          },
+          async loadDefaults(force = false) {
+            try {
+              const resp = await fetch("/sync/defaults");
+              if (!resp.ok) {
+                return;
+              }
+              const json = await resp.json();
+              const defaults = json.data || {};
+              for (const [key, value] of Object.entries(defaults)) {
+                if (value !== "" && value !== null && value !== undefined && (force || !this.payload[key])) {
+                  this.payload[key] = value;
+                }
+              }
+              if (force) {
+                this.output = "已从环境变量加载默认参数。";
+              }
+            } catch {}
+          },
+          save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(this.payload));
+          },
+          clearSaved() {
+            localStorage.removeItem(STORAGE_KEY);
+            this.output = "已清除本机保存的表单参数。";
+          },
+          clearOutput() {
+            this.status = "idle";
+            this.output = "等待提交...";
+          },
+          async submit() {
+            this.loading = true;
+            this.status = "running";
+            this.output = "执行中，请稍候...";
+
+            try {
+              const resp = await fetch("/sync/r2-d1", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(this.buildPayload()),
+              });
+              const text = await resp.text();
+              let data;
+              try {
+                data = text ? JSON.parse(text) : {};
+              } catch {
+                data = { raw: text };
+              }
+              this.status = resp.ok ? "success" : "error";
+              this.output = JSON.stringify(
+                {
+                  httpStatus: resp.status,
+                  response: data,
+                },
+                null,
+                2,
+              );
+            } catch (error) {
+              this.status = "error";
+              this.output = JSON.stringify(
+                {
+                  error: error instanceof Error ? error.message : String(error),
+                },
+                null,
+                2,
+              );
+            } finally {
+              this.loading = false;
+            }
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
