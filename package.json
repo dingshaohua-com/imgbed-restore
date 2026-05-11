@@ -1,5 +1,5 @@
 {
-  "name": "r2-d1-sync-server",
+  "name": "imgbed-restore",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",

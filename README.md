@@ -1,4 +1,4 @@
-# R2 -> D1 Sync Server
+# Imgbed Restore
 
 一个基于 Cloudflare Workers + Hono 的 R2 到图床 D1 元数据同步工具。页面在 `public/index.html`，接口由 Worker 提供。
 
@@ -18,34 +18,34 @@ pnpm run dev
 在项目根目录创建 `.dev.vars`：
 
 ```txt
-R2_D1_SYNC_BASE_URL="https://img.example.com"
-R2_D1_SYNC_API_TOKEN="imgbed_xxx"
-R2_D1_SYNC_R2_ENDPOINT="https://<accountid>.r2.cloudflarestorage.com"
-R2_D1_SYNC_R2_ACCESS_KEY_ID="xxx"
-R2_D1_SYNC_R2_SECRET_ACCESS_KEY="xxx"
-R2_D1_SYNC_R2_BUCKET="my-bucket"
-R2_D1_SYNC_CHANNEL_NAME="default"
-R2_D1_SYNC_PREFIX=""
-R2_D1_SYNC_REGION="auto"
-R2_D1_SYNC_PAGE_SIZE="1000"
-R2_D1_SYNC_CHECK_CONCURRENCY="20"
-R2_D1_SYNC_RESTORE_BATCH_SIZE="200"
+IMGBED_RESTORE_BASE_URL="https://img.example.com"
+IMGBED_RESTORE_API_TOKEN="imgbed_xxx"
+IMGBED_RESTORE_R2_ENDPOINT="https://<accountid>.r2.cloudflarestorage.com"
+IMGBED_RESTORE_R2_ACCESS_KEY_ID="xxx"
+IMGBED_RESTORE_R2_SECRET_ACCESS_KEY="xxx"
+IMGBED_RESTORE_R2_BUCKET="my-bucket"
+IMGBED_RESTORE_CHANNEL_NAME="default"
+IMGBED_RESTORE_PREFIX=""
+IMGBED_RESTORE_REGION="auto"
+IMGBED_RESTORE_PAGE_SIZE="1000"
+IMGBED_RESTORE_CHECK_CONCURRENCY="20"
+IMGBED_RESTORE_RESTORE_BATCH_SIZE="200"
 ```
 
 字段说明：
 
-- `R2_D1_SYNC_BASE_URL`：目标图床服务地址，例如 `https://img.example.com`
-- `R2_D1_SYNC_API_TOKEN`：目标图床服务的管理 API Token
-- `R2_D1_SYNC_R2_ENDPOINT`：R2 S3 API endpoint，不要带 bucket 路径
-- `R2_D1_SYNC_R2_ACCESS_KEY_ID`：R2 API Token 的 Access Key ID
-- `R2_D1_SYNC_R2_SECRET_ACCESS_KEY`：R2 API Token 的 Secret Access Key
-- `R2_D1_SYNC_R2_BUCKET`：R2 bucket 名称
-- `R2_D1_SYNC_CHANNEL_NAME`：写入图床元数据时使用的渠道名
-- `R2_D1_SYNC_PREFIX`：只同步指定前缀，为空表示同步整个 bucket
-- `R2_D1_SYNC_REGION`：R2 通常使用 `auto`
-- `R2_D1_SYNC_PAGE_SIZE`：R2 列表分页大小
-- `R2_D1_SYNC_CHECK_CONCURRENCY`：检查目标文件是否已存在的并发数
-- `R2_D1_SYNC_RESTORE_BATCH_SIZE`：批量写入目标服务的批大小
+- `IMGBED_RESTORE_BASE_URL`：目标图床服务地址，例如 `https://img.example.com`
+- `IMGBED_RESTORE_API_TOKEN`：目标图床服务的管理 API Token
+- `IMGBED_RESTORE_R2_ENDPOINT`：R2 S3 API endpoint，不要带 bucket 路径
+- `IMGBED_RESTORE_R2_ACCESS_KEY_ID`：R2 API Token 的 Access Key ID
+- `IMGBED_RESTORE_R2_SECRET_ACCESS_KEY`：R2 API Token 的 Secret Access Key
+- `IMGBED_RESTORE_R2_BUCKET`：R2 bucket 名称
+- `IMGBED_RESTORE_CHANNEL_NAME`：写入图床元数据时使用的渠道名
+- `IMGBED_RESTORE_PREFIX`：只同步指定前缀，为空表示同步整个 bucket
+- `IMGBED_RESTORE_REGION`：R2 通常使用 `auto`
+- `IMGBED_RESTORE_PAGE_SIZE`：R2 列表分页大小
+- `IMGBED_RESTORE_CHECK_CONCURRENCY`：检查目标文件是否已存在的并发数
+- `IMGBED_RESTORE_RESTORE_BATCH_SIZE`：批量写入目标服务的批大小
 
 ## 页面使用
 
@@ -107,14 +107,14 @@ POST /sync/r2-d1
 `r2Endpoint` 不要带 bucket 名或路径：
 
 ```txt
-R2_D1_SYNC_R2_ENDPOINT="https://<accountid>.r2.cloudflarestorage.com"
-R2_D1_SYNC_R2_BUCKET="one"
+IMGBED_RESTORE_R2_ENDPOINT="https://<accountid>.r2.cloudflarestorage.com"
+IMGBED_RESTORE_R2_BUCKET="one"
 ```
 
 `prefix` 用来限制只同步某个目录前缀，例如：
 
 ```txt
-R2_D1_SYNC_PREFIX="uploads/"
+IMGBED_RESTORE_PREFIX="uploads/"
 ```
 
 留空则同步整个 bucket。
@@ -130,9 +130,9 @@ pnpm run deploy
 生产环境不要提交或上传 `.dev.vars`。建议在 Cloudflare Dashboard 的 Worker Variables / Secrets 中配置同名变量，或用 Wrangler secrets 写入敏感值：
 
 ```txt
-pnpm exec wrangler secret put R2_D1_SYNC_API_TOKEN
-pnpm exec wrangler secret put R2_D1_SYNC_R2_ACCESS_KEY_ID
-pnpm exec wrangler secret put R2_D1_SYNC_R2_SECRET_ACCESS_KEY
+pnpm exec wrangler secret put IMGBED_RESTORE_API_TOKEN
+pnpm exec wrangler secret put IMGBED_RESTORE_R2_ACCESS_KEY_ID
+pnpm exec wrangler secret put IMGBED_RESTORE_R2_SECRET_ACCESS_KEY
 ```
 
 非敏感变量可以放在 `wrangler.jsonc` 的 `vars` 中，敏感 token 和 secret 建议用 secrets。

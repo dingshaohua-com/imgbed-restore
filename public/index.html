@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>R2 -> D1 同步工具</title>
+    <title>Imgbed Restore</title>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
       :root {
@@ -450,7 +450,7 @@
   <body x-data="syncTool()" x-cloak>
     <main class="wrap">
       <header class="hero">
-        <h1>R2 -> D1 同步</h1>
+        <h1>Imgbed Restore</h1>
         <p class="tip">填写参数后提交，将调用 <code>POST /sync/r2-d1</code> 执行同步。</p>
       </header>
 
@@ -494,7 +494,7 @@
                 </label>
                 <label class="field">
                   <span>r2Bucket</span>
-                  <input x-model.trim="payload.r2Bucket" placeholder="one" required />
+                  <input x-model.trim="payload.r2Bucket" required />
                 </label>
                 <label class="field">
                   <span>r2AccessKeyId</span>
@@ -618,7 +618,7 @@
     </main>
 
     <script>
-      const STORAGE_KEY = "r2-d1-sync-form";
+      const STORAGE_KEY = "imgbed-restore-form";
 
       function syncTool() {
         return {
@@ -630,7 +630,7 @@
             tuning: false,
           },
           payload: {
-            baseUrl: "https://img.dingshaohua.com",
+            baseUrl: "",
             apiToken: "",
             r2Endpoint: "",
             r2AccessKeyId: "",
