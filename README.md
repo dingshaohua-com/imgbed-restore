@@ -1,6 +1,14 @@
 # Imgbed Restore
 
-一个基于 Cloudflare Workers + Hono 的 R2 到图床 D1 元数据同步工具。页面在 `public/index.html`，接口由 Worker 提供。
+这是一个为 [MarSeventh/CloudFlare-ImgBed](https://github.com/MarSeventh/CloudFlare-ImgBed) 准备的补充工具，用来把 Cloudflare R2 中已经存在的文件重新写入 CloudFlare-ImgBed 的 D1 元数据。
+
+适用场景：
+
+- R2 里已有文件，但 CloudFlare-ImgBed 的 D1 数据库缺少对应记录
+- 迁移、恢复备份或手动上传 R2 对象后，需要让 CloudFlare-ImgBed 管理端重新识别这些文件
+- 只想按 R2 对象前缀批量补齐某一批文件的图床元数据
+
+本项目本身不是图床服务，不替代 CloudFlare-ImgBed；它只是调用目标 CloudFlare-ImgBed 实例的管理接口，将 R2 对象列表转换为可写入的文件元数据。页面在 `public/index.html`，接口由 Cloudflare Worker 提供。
 
 ## 本地启动
 
@@ -34,18 +42,18 @@ IMGBED_RESTORE_RESTORE_BATCH_SIZE="200"
 
 字段说明：
 
-- `IMGBED_RESTORE_BASE_URL`：目标图床服务地址，例如 `https://img.example.com`
-- `IMGBED_RESTORE_API_TOKEN`：目标图床服务的管理 API Token
+- `IMGBED_RESTORE_BASE_URL`：目标 CloudFlare-ImgBed 服务地址，例如 `https://img.example.com`
+- `IMGBED_RESTORE_API_TOKEN`：目标 CloudFlare-ImgBed 管理 API Token
 - `IMGBED_RESTORE_R2_ENDPOINT`：R2 S3 API endpoint，不要带 bucket 路径
 - `IMGBED_RESTORE_R2_ACCESS_KEY_ID`：R2 API Token 的 Access Key ID
 - `IMGBED_RESTORE_R2_SECRET_ACCESS_KEY`：R2 API Token 的 Secret Access Key
 - `IMGBED_RESTORE_R2_BUCKET`：R2 bucket 名称
-- `IMGBED_RESTORE_CHANNEL_NAME`：写入图床元数据时使用的渠道名
+- `IMGBED_RESTORE_CHANNEL_NAME`：写入 CloudFlare-ImgBed 元数据时使用的渠道名
 - `IMGBED_RESTORE_PREFIX`：只同步指定前缀，为空表示同步整个 bucket
 - `IMGBED_RESTORE_REGION`：R2 通常使用 `auto`
 - `IMGBED_RESTORE_PAGE_SIZE`：R2 列表分页大小
 - `IMGBED_RESTORE_CHECK_CONCURRENCY`：检查目标文件是否已存在的并发数
-- `IMGBED_RESTORE_RESTORE_BATCH_SIZE`：批量写入目标服务的批大小
+- `IMGBED_RESTORE_RESTORE_BATCH_SIZE`：批量写入 CloudFlare-ImgBed 的批大小
 
 ## 页面使用
 
@@ -63,6 +71,8 @@ IMGBED_RESTORE_RESTORE_BATCH_SIZE="200"
 - “同步范围”和“性能与策略”默认折叠，一般保持默认即可
 
 注意：`GET /sync/defaults` 会把环境变量返回到浏览器，适合本地或私有工具使用。如果要公开部署，建议先给页面和接口加访问控制。
+
+目标 CloudFlare-ImgBed 实例需要能通过管理 API Token 调用批量恢复接口。本工具会读取 R2 对象，检查目标实例里是否已有记录，并按批次调用目标实例写入缺失的元数据。
 
 ## 同步接口
 
